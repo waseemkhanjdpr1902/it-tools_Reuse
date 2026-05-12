@@ -1,3 +1,4 @@
+<header class="h-52px bg-[#6c3fc7] flex items-center px-4 gap-3">
 <script setup lang="ts">
 import { IconBrandGithub, IconBrandX, IconInfoCircle, IconMoon, IconSun } from '@tabler/icons-vue';
 import { useStyleStore } from '@/stores/style.store';
