@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useHead } from '@vueuse/head';
-import { useSortable } from '@vueuse/integrations/useSortable';
-import { ref } from 'vue';
 import ToolCard from '../components/ToolCard.vue';
 import { useToolStore } from '@/tools/tools.store';
 import { useI18n } from 'vue-i18n';
@@ -15,12 +13,10 @@ useHead({ title: 'IT Tools — Handy online tools for developers' });
 const favoriteTools = computed(() => toolStore.favoriteTools);
 const newTools      = computed(() => toolStore.newTools);
 
-// Re-order favourites via drag
 function onUpdateFavoriteTools() {
   toolStore.updateFavoriteTools(favoriteTools.value);
 }
 
-// Upgrade banner dismissed state
 const upgradeDismissed = ref(false);
 </script>
 
@@ -64,10 +60,7 @@ const upgradeDismissed = ref(false);
           {{ t('home.favouriteTools', 'Your favourites') }}
         </h2>
       </div>
-      <div
-        class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
-        id="favourites-grid"
-      >
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
         <ToolCard
           v-for="tool in favoriteTools"
           :key="tool.name"
@@ -119,7 +112,7 @@ const upgradeDismissed = ref(false);
       </div>
     </section>
 
-    <!-- ── Empty state (no tools matched) ──────────────────────────────── -->
+    <!-- ── Empty state ──────────────────────────────────────────────────── -->
     <div
       v-if="toolStore.toolsByCategory.length === 0"
       class="flex flex-col items-center justify-center py-24 text-center"
