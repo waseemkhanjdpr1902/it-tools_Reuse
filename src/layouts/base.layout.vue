@@ -1,3 +1,4 @@
+<nav class="w-200px bg-[#1e1147] h-full flex flex-col">
 <script lang="ts" setup>
 import { NIcon, useThemeVars } from 'naive-ui';
 
