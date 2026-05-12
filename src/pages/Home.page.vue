@@ -1,124 +1,132 @@
 <script setup lang="ts">
-import { IconDragDrop, IconHeart } from '@tabler/icons-vue';
-import { useHead } from '@vueuse/head';
 import { computed } from 'vue';
-import Draggable from 'vuedraggable';
-import ColoredCard from '../components/ColoredCard.vue';
+import { useHead } from '@vueuse/head';
+import { useSortable } from '@vueuse/integrations/useSortable';
+import { ref } from 'vue';
 import ToolCard from '../components/ToolCard.vue';
 import { useToolStore } from '@/tools/tools.store';
-import { config } from '@/config';
+import { useI18n } from 'vue-i18n';
 
 const toolStore = useToolStore();
-
-useHead({ title: 'IT Tools - Handy online tools for developers' });
 const { t } = useI18n();
 
-const favoriteTools = computed(() => toolStore.favoriteTools);
+useHead({ title: 'IT Tools — Handy online tools for developers' });
 
-// Update favorite tools order when drag is finished
+const favoriteTools = computed(() => toolStore.favoriteTools);
+const newTools      = computed(() => toolStore.newTools);
+
+// Re-order favourites via drag
 function onUpdateFavoriteTools() {
-  toolStore.updateFavoriteTools(favoriteTools.value); // Update the store with the new order
+  toolStore.updateFavoriteTools(favoriteTools.value);
 }
+
+// Upgrade banner dismissed state
+const upgradeDismissed = ref(false);
 </script>
 
 <template>
-  <div class="pt-50px">
-    <div class="grid-wrapper">
-      <div class="grid grid-cols-1 gap-12px lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-2 xl:grid-cols-4">
-        <ColoredCard v-if="config.showBanner" :title="$t('home.follow.title')" :icon="IconHeart">
-          {{ $t('home.follow.p1') }}
-          <a
-            href="https://github.com/CorentinTh/it-tools"
-            rel="noopener"
-            target="_blank"
-            :aria-label="$t('home.follow.githubRepository')"
-          >GitHub</a>
-          {{ $t('home.follow.p2') }}
-          <a
-            href="https://x.com/ittoolsdottech"
-            rel="noopener"
-            target="_blank"
-            :aria-label="$t('home.follow.twitterXAccount')"
-          >X</a>.
-          {{ $t('home.follow.thankYou') }}
-          <n-icon :component="IconHeart" />
-        </ColoredCard>
-      </div>
+  <div class="px-5 py-5 max-w-7xl mx-auto">
 
-      <transition name="height">
-        <div v-if="toolStore.favoriteTools.length > 0">
-          <h3 class="mb-5px mt-25px text-neutral-400 font-500">
-            {{ $t('home.categories.favoriteTools') }}
-            <c-tooltip :tooltip="$t('home.categories.favoritesDndToolTip')">
-              <n-icon :component="IconDragDrop" size="18" />
-            </c-tooltip>
-          </h3>
-          <Draggable
-            :list="favoriteTools"
-            class="grid grid-cols-1 gap-12px lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-2 xl:grid-cols-4"
-            ghost-class="ghost-favorites-draggable"
-            item-key="name"
-            @end="onUpdateFavoriteTools"
-          >
-            <template #item="{ element: tool }">
-              <ToolCard :tool="tool" />
-            </template>
-          </Draggable>
-        </div>
-      </transition>
-
-      <div v-if="toolStore.newTools.length > 0">
-        <h3 class="mb-5px mt-25px text-neutral-400 font-500">
-          {{ t('home.categories.newestTools') }}
-        </h3>
-        <div class="grid grid-cols-1 gap-12px lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-2 xl:grid-cols-4">
-          <ToolCard v-for="tool in toolStore.newTools" :key="tool.name" :tool="tool" />
-        </div>
+    <!-- ── Upgrade / Pro banner ─────────────────────────────────────────── -->
+    <div
+      v-if="!upgradeDismissed"
+      class="
+        flex items-center gap-3 mb-6 p-4 rounded-xl
+        bg-purple-500 text-white
+      "
+    >
+      <div class="i-tabler-crown text-2xl opacity-90 flex-shrink-0" />
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium leading-tight">Unlock Pro — 50+ premium tools, zero ads</p>
+        <p class="text-xs opacity-75 mt-0.5">Powered by Razorpay · ₹199/month or ₹1,799/year</p>
       </div>
-
-      <h3 class="mb-5px mt-25px text-neutral-400 font-500">
-        {{ $t('home.categories.allTools') }}
-      </h3>
-      <div class="grid grid-cols-1 gap-12px lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-2 xl:grid-cols-4">
-        <ToolCard v-for="tool in toolStore.tools" :key="tool.name" :tool="tool" />
-      </div>
+      <button
+        class="
+          flex-shrink-0 px-4 h-8 rounded-lg text-xs font-medium
+          bg-white/20 hover:bg-white/30 border border-solid border-white/30
+          text-white cursor-pointer transition-colors
+        "
+      >
+        Try free →
+      </button>
+      <button
+        class="i-tabler-x text-lg opacity-60 hover:opacity-100 cursor-pointer bg-transparent border-none text-white flex-shrink-0"
+        @click="upgradeDismissed = true"
+        aria-label="Dismiss"
+      />
     </div>
+
+    <!-- ── Favourite tools ──────────────────────────────────────────────── -->
+    <section v-if="favoriteTools.length > 0" class="mb-8">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="i-tabler-heart text-base text-amber-500" />
+        <h2 class="text-sm font-medium text-gray-500 dark:text-gray-400">
+          {{ t('home.favouriteTools', 'Your favourites') }}
+        </h2>
+      </div>
+      <div
+        class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
+        id="favourites-grid"
+      >
+        <ToolCard
+          v-for="tool in favoriteTools"
+          :key="tool.name"
+          :tool="tool"
+        />
+      </div>
+    </section>
+
+    <!-- ── New tools ────────────────────────────────────────────────────── -->
+    <section v-if="newTools.length > 0" class="mb-8">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="i-tabler-sparkles text-base text-purple-500" />
+        <h2 class="text-sm font-medium text-gray-500 dark:text-gray-400">
+          {{ t('home.newTools', 'New tools') }}
+        </h2>
+      </div>
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        <ToolCard
+          v-for="tool in newTools"
+          :key="tool.name"
+          :tool="tool"
+        />
+      </div>
+    </section>
+
+    <!-- ── All tools by category ────────────────────────────────────────── -->
+    <section
+      v-for="category in toolStore.toolsByCategory"
+      :key="category.name"
+      class="mb-8"
+      :id="category.name"
+    >
+      <div class="flex items-center gap-2 mb-3">
+        <div class="i-tabler-folder text-base text-gray-400" />
+        <h2 class="text-sm font-medium text-gray-500 dark:text-gray-400 capitalize">
+          {{ category.name }}
+        </h2>
+        <span class="text-xs text-gray-300 dark:text-gray-600">
+          {{ category.components.length }}
+        </span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        <ToolCard
+          v-for="tool in category.components"
+          :key="tool.name"
+          :tool="tool"
+        />
+      </div>
+    </section>
+
+    <!-- ── Empty state (no tools matched) ──────────────────────────────── -->
+    <div
+      v-if="toolStore.toolsByCategory.length === 0"
+      class="flex flex-col items-center justify-center py-24 text-center"
+    >
+      <div class="i-tabler-tools-off text-5xl text-gray-200 mb-3" />
+      <p class="text-gray-400 text-sm">No tools found.</p>
+    </div>
+
   </div>
 </template>
-
-<style scoped lang="less">
-.height-enter-active,
-.height-leave-active {
-  transition: all 0.5s ease-in-out;
-  overflow: hidden;
-  max-height: 500px;
-}
-
-.height-enter-from,
-.height-leave-to {
-  max-height: 42px;
-  overflow: hidden;
-  opacity: 0;
-  margin-bottom: 0;
-}
-
-.ghost-favorites-draggable {
-  opacity: 0.4;
-  background-color: #ccc;
-  border: 2px dashed #666;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  transform: scale(1.1);
-  animation: ghost-favorites-draggable-animation 0.2s ease-out;
-}
-
-@keyframes ghost-favorites-draggable-animation {
-  0% {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  100% {
-    opacity: 0.4;
-    transform: scale(1.0);
-  }
-}
-</style>
