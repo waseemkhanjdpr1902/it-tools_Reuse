@@ -1,116 +1,70 @@
-<script setup lang="ts">
-import { computed } from 'vue';
-import { useRouter } from 'vue-router';
-import type { Tool } from '@/tools/tools.types';
-import { useToolStore } from '@/tools/tools.store';
-
-const props = defineProps<{
-  tool: Tool;
-}>();
-
-const router  = useRouter();
-const toolStore = useToolStore();
-
-// ── Category → icon background + text colour ──────────────────────────────
-const categoryColorMap: Record<string, { bg: string; text: string }> = {
-  crypto:      { bg: '#EEEDFE', text: '#534AB7' },
-  converter:   { bg: '#FAEEDA', text: '#854F0B' },
-  web:         { bg: '#E6F1FB', text: '#185FA5' },
-  math:        { bg: '#EAF3DE', text: '#3B6D11' },
-  image:       { bg: '#FBEAF0', text: '#993556' },
-  text:        { bg: '#E1F5EE', text: '#0F6E56' },
-  'date-time': { bg: '#FAECE7', text: '#993C1D' },
-  network:     { bg: '#E6F1FB', text: '#185FA5' },
-  data:        { bg: '#FAEEDA', text: '#854F0B' },
-  'os-cli':    { bg: '#F1EFE8', text: '#5F5E5A' },
-};
-
-const iconStyle = computed(() => {
-  const cat = props.tool.category ?? '';
-  const color = categoryColorMap[cat] ?? { bg: '#F1EFE8', text: '#5F5E5A' };
-  return {
-    backgroundColor: color.bg,
-    color:           color.text,
-  };
-});
-
-const isFavourite = computed(() =>
-  toolStore.isToolFavourite(props.tool),
-);
-
-function toggleFavourite(e: MouseEvent) {
-  e.preventDefault();
-  e.stopPropagation();
-  toolStore.toggleFavouriteTool(props.tool);
-}
-
-function navigate() {
-  router.push(props.tool.path);
-}
-</script>
-
 <template>
-  <div
-    class="
-      group relative
-      bg-white dark:bg-dark-100
-      border border-solid border-gray-100 dark:border-dark-50
-      rounded-xl p-3 cursor-pointer
-      transition-all duration-150
-      hover:(border-purple-300 shadow shadow-purple-100 dark:shadow-purple-900/20)
-      flex flex-col
-    "
-    @click="navigate"
-    :title="tool.description"
-  >
-    <!-- Favourite toggle — top-right corner, visible on hover -->
-    <button
-      class="
-        absolute top-2 right-2 p-1 rounded-md
-        text-gray-300 hover:text-amber-400
-        opacity-0 group-hover:opacity-100
-        transition-all duration-150
-        bg-transparent border-none cursor-pointer
-      "
-      :class="isFavourite ? '!opacity-100 !text-amber-400' : ''"
-      @click.stop="toggleFavourite"
-      :aria-label="isFavourite ? 'Remove from favourites' : 'Add to favourites'"
+  <div class="relative group h-full">
+    <router-link 
+      :to="tool.path"
+      class="flex flex-col h-full p-6 bg-white border border-slate-200 rounded-2xl shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/10 hover:border-emerald-500 group-hover:-translate-y-1"
     >
-      <div :class="isFavourite ? 'i-tabler-heart-filled' : 'i-tabler-heart'" class="text-base" />
-    </button>
+      <div class="flex justify-between items-start mb-5">
+        <div class="p-3 bg-slate-50 rounded-xl group-hover:bg-emerald-50 transition-colors">
+          <component 
+            :is="tool.icon" 
+            class="w-6 h-6 text-slate-500 group-hover:text-emerald-600" 
+          />
+        </div>
+        
+        <span 
+          v-if="tool.isPro" 
+          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 uppercase"
+        >
+          Pro
+        </span>
+      </div>
 
-    <!-- Coloured icon box -->
-    <div
-      class="w-9 h-9 rounded-lg flex items-center justify-center text-lg mb-2 flex-shrink-0"
-      :style="iconStyle"
-    >
-      <div :class="[tool.icon, 'text-base']" />
-    </div>
+      <div class="flex-grow">
+        <h3 class="text-lg font-bold text-slate-900 mb-2 group-hover:text-emerald-700">
+          {{ tool.name }}
+        </h3>
+        <p class="text-sm text-slate-500 leading-relaxed">
+          {{ tool.description }}
+        </p>
+      </div>
 
-    <!-- Tool name -->
-    <p class="text-sm font-medium text-gray-800 dark:text-gray-100 truncate leading-tight">
-      {{ tool.name }}
-    </p>
+      <div class="mt-6 flex items-center text-sm font-semibold text-emerald-600 opacity-0 group-hover:opacity-100 transition-all transform translate-x-[-10px] group-hover:translate-x-0">
+        <span>Try Tool</span>
+        <svg class="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+        </svg>
+      </div>
+    </router-link>
 
-    <!-- Description -->
-    <p
-      v-if="tool.description"
-      class="text-xs text-gray-400 dark:text-gray-500 mt-0.5 leading-snug line-clamp-2"
-    >
-      {{ tool.description }}
-    </p>
-
-    <!-- NEW badge -->
-    <span
-      v-if="toolStore.isNewTool(tool)"
-      class="
-        inline-block mt-2 self-start
-        text-[10px] font-medium px-2 py-0.5 rounded-full
-        bg-green-50 text-green-600
-        dark:bg-green-900/30 dark:text-green-400
-      "
-    >
-      New
-    </span>
+    <div 
+      v-if="tool.isPro" 
+      class="absolute inset-0 bg-white/10 backdrop-blur-[1px] pointer-events-none rounded-2xl border border-transparent"
+      title="Professional Subscription Required"
+    ></div>
   </div>
 </template>
+
+<script setup lang="ts">
+// Complete TypeScript Props definition
+interface Tool {
+  name: string;
+  description: string;
+  path: string;
+  icon: any;
+  isPro?: boolean;
+}
+
+defineProps<{
+  tool: Tool;
+}>();
+</script>
+
+<style scoped>
+/* High-performance transitions */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+</style>
