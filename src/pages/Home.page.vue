@@ -1,87 +1,61 @@
 <template>
-  <div class="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-      <div class="text-center mb-16">
-        <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight sm:text-5xl mb-4">
-          Advanced Utility Dashboard
-        </h1>
-        <p class="text-lg text-slate-600 max-w-2xl mx-auto">
-          Secure, client-side tools for tax professionals and developers. 
-          Marked tools require a <span class="text-emerald-600 font-bold">Pro Subscription</span>.
-        </p>
-      </div>
+  <div class="p-6 max-w-7xl mx-auto">
+    <header class="text-center mb-16 pt-10">
+      <h1 class="text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
+        Professional Utility Suite
+      </h1>
+      <p class="text-lg text-slate-600 max-w-2xl mx-auto">
+        High-performance tools for tax practitioners, developers, and researchers.
+      </p>
+    </header>
 
-      <div v-for="category in categories" :key="category.name" class="mb-12">
-        <div class="flex items-center mb-6 space-x-3">
-          <div class="p-2 bg-emerald-100 rounded-lg">
-            <component :is="category.icon" class="w-6 h-6 text-emerald-700" />
+    <div v-for="category in categories" :key="category.name" class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-800 mb-8 flex items-center gap-3">
+        <component :is="category.icon" class="w-6 h-6 text-primary-600" />
+        {{ category.name }}
+      </h2>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <router-link 
+          v-for="tool in category.tools" 
+          :key="tool.name" 
+          :to="tool.path"
+          class="group p-6 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-xl hover:border-primary-500 transition-all duration-300 flex flex-col h-full"
+        >
+          <div class="mb-4 p-3 bg-slate-50 rounded-xl group-hover:bg-primary-50 transition-colors w-fit">
+            <component :is="tool.icon" class="w-6 h-6 text-slate-400 group-hover:text-primary-600" />
           </div>
-          <h2 class="text-2xl font-bold text-slate-800">{{ category.name }}</h2>
-        </div>
-
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          <ToolCard 
-            v-for="tool in category.tools" 
-            :key="tool.name" 
-            :tool="tool" 
-          />
-        </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2 group-hover:text-primary-700">
+            {{ tool.name }}
+          </h3>
+          <p class="text-sm text-slate-500 leading-relaxed">
+            {{ tool.description }}
+          </p>
+        </router-link>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import ToolCard from '@/components/ToolCard.vue';
-import { 
-  LayoutGrid, 
-  ShieldCheck, 
-  FileCode, 
-  Calculator 
-} from 'lucide-vue-next';
+import { ShieldCheck, FileCode, Calculator, LayoutGrid } from 'lucide-vue-next';
 
-// This acts as your database. Add 'isPro: true' to lock a tool.
-const categories = ref([
+const categories = [
   {
-    name: 'Compliance & Tax',
+    name: 'Compliance & Finance',
     icon: ShieldCheck,
     tools: [
-      { 
-        name: 'GSTIN Validator', 
-        description: 'Verify Indian GSTIN authenticity and business status.', 
-        path: '/gst-validator', 
-        icon: ShieldCheck,
-        isPro: true 
-      },
-      { 
-        name: 'PAN Verification', 
-        description: 'Validate PAN card formats and checksums.', 
-        path: '/pan-checker', 
-        icon: LayoutGrid,
-        isPro: false 
-      },
+      { name: 'GSTIN Search', description: 'Verify business details and status.', path: '/gst-search', icon: ShieldCheck },
+      { name: 'PAN Validator', description: 'Validate PAN card checksums.', path: '/pan-validator', icon: Calculator }
     ]
   },
   {
-    name: 'Developer Utilities',
+    name: 'IT & Development',
     icon: FileCode,
     tools: [
-      { 
-        name: 'JSON Formatter', 
-        description: 'Clean and beautify complex JSON structures.', 
-        path: '/json-format', 
-        icon: FileCode,
-        isPro: false 
-      },
-      { 
-        name: 'SQL Generator', 
-        description: 'Generate SQL queries from JSON objects.', 
-        path: '/sql-gen', 
-        icon: Calculator,
-        isPro: true 
-      },
+      { name: 'JSON Formatter', description: 'Beautify and validate JSON.', path: '/json-formatter', icon: FileCode },
+      { name: 'Hash Generator', description: 'Generate MD5, SHA1, SHA256.', path: '/hash-generator', icon: LayoutGrid }
     ]
   }
-]);
+];
 </script>
