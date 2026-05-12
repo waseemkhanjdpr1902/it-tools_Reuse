@@ -1,12 +1,24 @@
-import { LetterX } from '@vicons/tabler';
-import { defineTool } from '../tool';
-import { translate } from '@/plugins/i18n.plugin';
+import { createRouter, createWebHistory } from 'vue-router'
+import HomeView from '@/views/HomeView.vue'
 
-export const tool = defineTool({
-  name: translate('tools.roman-numeral-converter.title'),
-  path: '/roman-numeral-converter',
-  description: translate('tools.roman-numeral-converter.description'),
-  keywords: ['roman', 'arabic', 'converter', 'X', 'I', 'V', 'L', 'C', 'D', 'M'],
-  component: () => import('./roman-numeral-converter.vue'),
-  icon: LetterX,
-});
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: [
+    {
+      path: '/',
+      name: 'home',
+      component: HomeView
+    },
+    // Dynamic tool loader - connects buttons to the tool logic
+    {
+      path: '/:toolId',
+      name: 'tool',
+      component: () => import('@/views/ToolWrapper.vue')
+    }
+  ],
+  scrollBehavior() {
+    return { top: 0 }
+  }
+})
+
+export default router
